@@ -5,6 +5,7 @@ import json
 import os
 import sys
 import glob
+import argparse
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SKILL_DIR = os.path.join(SCRIPT_DIR, "..")
@@ -73,6 +74,13 @@ def ask(prompt: str, default: str = "") -> str:
 
 
 def main():
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--install-agent-command", action="store_true")
+    args, _ = parser.parse_known_args()
+    if args.install_agent_command:
+        from install_agent_command import main as install_main
+        raise SystemExit(install_main([]))
+
     print("=" * 50)
     print("🎬 Cinema Manager 设置向导")
     print("=" * 50)

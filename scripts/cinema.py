@@ -20,8 +20,6 @@ SCRIPT_DIR = Path(__file__).parent
 sys.path.insert(0, str(SCRIPT_DIR))
 
 from plugins import ResourcePlugin, ResourceResult
-from quark import QuarkClient
-from library import LibraryManager
 
 CONFIG_PATHS = [
     SCRIPT_DIR.parent / "config.json",
@@ -59,7 +57,9 @@ def load_plugins(config: dict) -> list:
     return plugins
 
 
-def get_quark_client(config: dict) -> QuarkClient:
+def get_quark_client(config: dict):
+    from quark import QuarkClient
+
     quark_conf = config.get("quark", {})
     client = QuarkClient(
         cookie=quark_conf.get("cookie", ""),
@@ -196,6 +196,8 @@ def cmd_auto(query: str, config: dict):
 
         if saved_fids:
             from library import extract_movie_info
+            from library import LibraryManager
+
             info = extract_movie_info(best.title)
             lib = LibraryManager(client, library_root=folder,
                                  omdb_key=config.get("omdb_api_key", ""),
@@ -223,6 +225,8 @@ def cmd_auto(query: str, config: dict):
 
 def cmd_organize(fid: str, title: str, config: dict, content_type: str = "movie",
                  season: int = 1, episode: int = 0):
+    from library import LibraryManager
+
     client = get_quark_client(config)
     lib = LibraryManager(client, library_root=config.get("save_folder", "影视资源"),
                          omdb_key=config.get("omdb_api_key", ""),

@@ -1,6 +1,6 @@
-# 🎬 Cinema Manager - Hermes Skill
+# 🎬 Cinema Agent
 
-A [Hermes Agent](https://github.com/nousresearch/hermes-agent) skill for personal media library management — discover content, save to Quark cloud drive, and auto-organize with genre classification.
+A terminal-first media assistant for personal media library management — chat with an OpenAI-compatible model, discover content, save to Quark cloud drive, and keep lightweight session/preferences memory.
 
 ## Features
 
@@ -9,22 +9,75 @@ A [Hermes Agent](https://github.com/nousresearch/hermes-agent) skill for persona
 - ☁️ **Quark save** — one-click save to your Quark cloud drive
 - 🎭 **Genre auto-classification** — OMDB API or content source scraping, with local cache
 - 📁 **Library management** — auto-organize files for Infuse/Plex/Jellyfin
+- 🤖 **Terminal agent** — start with `jw`/`JW`, chat naturally, stream model replies, and call approved tools
+- 🧠 **Memory** — session memory for recent search/save state, plus persistent preferences via `/remember`
 
 ## Quick Start
 
 ```bash
-git clone https://github.com/249695811/cinema-manager.git ~/.hermes/skills/cinema-manager
+git clone https://github.com/JWJW000/cinema-agent.git
+cd cinema-agent
 pip install httpx
-python3 ~/.hermes/skills/cinema-manager/scripts/setup.py
+python3 scripts/setup.py
+python3 scripts/setup.py --install-agent-command
 ```
 
 Setup wizard walks you through:
-1. **夸克网盘登录** — 账号密码（推荐）或 Cookie
+1. **夸克网盘登录** — browser-assisted Cookie login
 2. **内容源选择** — 自动检测已安装插件，逐个启用/禁用
 3. **自动分类** — OMDB API（推荐）/ 内容源抓取 / 关闭
 4. **保存目录** — 夸克网盘中的文件夹名
 
 ## Usage
+
+### Terminal Agent
+
+Install the terminal entry commands:
+
+```bash
+python3 scripts/setup.py --install-agent-command
+```
+
+Make sure `~/.local/bin` is in your `PATH`, then start the agent with either command:
+
+```bash
+JW
+jw
+```
+
+Configure an OpenAI-compatible model with environment variables:
+
+```bash
+export OPENAI_API_KEY="your-api-key"
+export OPENAI_MODEL="gpt-4.1-mini"
+# optional, for compatible providers:
+export OPENAI_BASE_URL="https://api.openai.com/v1"
+```
+
+Inside the agent:
+
+```text
+/help          Show commands
+/config        Show safe config summary
+/tools         List available tools
+/memory        Show current memory
+/remember k=v  Remember a preference
+/forget        Clear session memory
+/login quark   Open Quark in your browser, auto-detect Cookie when possible
+/exit          Exit
+```
+
+Example:
+
+```text
+你> 帮我找范冰冰主演的苹果
+agent> 找到 1 个结果：
+1. 名称：《 苹果》 (2007) ... [quark/wp365] 评分 70
+如果要保存，可以说“保存第一个结果”。
+
+你> /remember quality=4K
+agent> 已记住：quality = 4K
+```
 
 ### Via Hermes Agent
 
@@ -42,6 +95,7 @@ python3 scripts/cinema.py save "https://pan.quark.cn/s/xxx"  # Save a link
 python3 scripts/cinema.py organize <fid> "电影名" --type movie  # Organize
 python3 scripts/cinema.py plugins                    # List plugins
 python3 scripts/setup.py                             # Re-run setup wizard
+python3 scripts/agent.py                             # Start JW agent without installing commands
 ```
 
 ## Configuration
@@ -57,15 +111,42 @@ Edit `config.json` (created by setup wizard):
     "wp365": { "enabled": true }
   },
   "save_folder": "夸克影视",
-  "omdb_api_key": ""
+  "omdb_api_key": "",
+  "agent": {
+    "provider": "openai_compatible",
+    "base_url": "https://api.openai.com/v1",
+    "model": "",
+    "api_key_env": "OPENAI_API_KEY",
+    "allow_shell": "confirm",
+    "history_limit": 20
+  },
+  "memory": {
+    "enabled": true,
+    "path": "~/.cinema-manager/memory.json"
+  }
 }
 ```
 
 ### Quark Auth
 
-Login to [pan.quark.cn](https://pan.quark.cn), open browser DevTools (F12) → Network tab → copy the `Cookie` header value from any request. Paste it into `config.json` as `quark.cookie`.
+In the terminal agent, run `/login quark`. JW opens [pan.quark.cn](https://pan.quark.cn), waits for you to finish browser login, then tries to read the Quark Cookie from your local browser. If automatic detection is unavailable, it falls back to hidden Cookie paste.
 
-Cookies expire after ~7 days. When expired, grab a fresh one from the browser.
+Cookies expire after ~7 days. When expired, run `/login quark` again.
+
+### Memory
+
+The terminal agent keeps two kinds of memory:
+
+- Session memory: recent search results and last save result, cleared by `/forget`
+- Preference memory: small persistent key-value preferences stored in `~/.cinema-manager/memory.json`
+
+Commands:
+
+```text
+/memory
+/remember quality=4K
+/forget
+```
 
 ### Genre Classification
 
