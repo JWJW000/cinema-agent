@@ -67,17 +67,6 @@ Inside the agent:
 /exit          Exit
 ```
 
-Example:
-
-```text
-你> 帮我找范冰冰主演的苹果
-agent> 找到 1 个结果：
-1. 名称：《 苹果》 (2007) ... [quark/wp365] 评分 70
-如果要保存，可以说“保存第一个结果”。
-
-你> /remember quality=4K
-agent> 已记住：quality = 4K
-```
 
 ### Via Hermes Agent
 
