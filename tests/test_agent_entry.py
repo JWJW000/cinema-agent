@@ -1,6 +1,6 @@
 import unittest
 
-from scripts.agent import is_login_quark_command, normalize_command
+from scripts.agent import is_login_quark_command, normalize_command, render_chunk
 
 
 class AgentEntryTests(unittest.TestCase):
@@ -14,6 +14,18 @@ class AgentEntryTests(unittest.TestCase):
 
     def test_login_quark_command_rejects_unrelated_text(self):
         self.assertFalse(is_login_quark_command("你能做什么"))
+
+    def test_render_chunk_smooths_short_model_text(self):
+        written = []
+        render_chunk("你好", write=written.append, sleep=lambda _: None)
+
+        self.assertEqual(written, ["你", "好"])
+
+    def test_render_chunk_keeps_multiline_tool_output_together(self):
+        written = []
+        render_chunk("找到 1 个结果：\n1. 苹果", write=written.append, sleep=lambda _: None)
+
+        self.assertEqual(written, ["找到 1 个结果：\n1. 苹果"])
 
 
 if __name__ == "__main__":

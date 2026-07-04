@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+import time
 
 try:
     from .agent_config import DEFAULT_CONFIG_PATH, load_agent_model_config, load_json_config, safe_config_summary
@@ -50,6 +51,17 @@ def is_login_quark_command(text: str) -> bool:
     return normalized in {"/login", "/loginquark", "loginquark", "登录夸克"}
 
 
+def render_chunk(chunk: str, write=None, sleep=None, delay: float = 0.01) -> None:
+    writer = write or (lambda text: print(text, end="", flush=True))
+    sleeper = sleep or time.sleep
+    if "\n" in chunk or len(chunk) > 120:
+        writer(chunk)
+        return
+    for char in chunk:
+        writer(char)
+        sleeper(delay)
+
+
 def repl() -> int:
     core = build_core()
     print_banner(core)
@@ -78,7 +90,7 @@ def repl() -> int:
             print("agent> ", end="", flush=True)
             wrote = False
             for chunk in core.handle_input_stream(text):
-                print(chunk, end="", flush=True)
+                render_chunk(chunk)
                 wrote = True
             if wrote:
                 print()
