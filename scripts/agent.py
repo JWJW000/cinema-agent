@@ -11,11 +11,11 @@ import time
 try:
     from .agent_config import DEFAULT_CONFIG_PATH, load_agent_model_config, load_json_config, safe_config_summary
     from .agent_core import AgentCore, build_default_registry
-    from .quark_login import login_quark_with_browser
+    from .quark_auth import QuarkAuthManager
 except ImportError:  # pragma: no cover - script execution fallback
     from agent_config import DEFAULT_CONFIG_PATH, load_agent_model_config, load_json_config, safe_config_summary
     from agent_core import AgentCore, build_default_registry
-    from quark_login import login_quark_with_browser
+    from quark_auth import QuarkAuthManager
 
 
 def build_core() -> AgentCore:
@@ -35,10 +35,17 @@ def print_banner(core: AgentCore) -> None:
 
 
 def handle_login_quark() -> str:
-    result = login_quark_with_browser(DEFAULT_CONFIG_PATH)
+    result = QuarkAuthManager(DEFAULT_CONFIG_PATH).login()
     if not result.get("ok"):
         return f"夸克登录未完成：{result.get('error', '未知错误')}"
-    source = "浏览器自动读取" if result.get("source") == "browser" else "手动输入"
+    source_map = {
+        "qr": "夸克 App 扫码",
+        "browser": "浏览器自动读取",
+        "clipboard": "剪贴板 Cookie",
+        "manual": "手动 Cookie",
+        "visible": "可见粘贴 Cookie",
+    }
+    source = source_map.get(str(result.get("source", "")), str(result.get("source", "未知")))
     return f"夸克 Cookie 已保存（来源：{source}，长度 {result.get('cookie_length', 0)}），有效性将在下次夸克请求时确认。"
 
 

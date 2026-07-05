@@ -63,7 +63,7 @@ Inside the agent:
 /memory        Show current memory
 /remember k=v  Remember a preference
 /forget        Clear session memory
-/login quark   Open Quark in your browser, auto-detect Cookie when possible
+/login quark   Log in to Quark with App QR scan, then Cookie fallback
 /exit          Exit
 ```
 
@@ -94,7 +94,9 @@ Edit `config.json` (created by setup wizard):
 ```json
 {
   "quark": {
-    "cookie": "your_cookie_from_browser"
+    "cookie": "",
+    "auth_source": "",
+    "auth_updated_at": 0
   },
   "plugins": {
     "wp365": { "enabled": true }
@@ -118,7 +120,7 @@ Edit `config.json` (created by setup wizard):
 
 ### Quark Auth
 
-In the terminal agent, run `/login quark`. JW opens [pan.quark.cn](https://pan.quark.cn), waits for you to finish browser login, then tries to read the Quark Cookie from your local browser. If automatic detection is unavailable, it falls back to hidden Cookie paste.
+In the terminal agent, run `/login quark`. JW first generates a terminal QR code through `quarkpan`; scan it with the Quark app and confirm login. If QR login is unavailable, JW falls back to the older browser/Cookie flow.
 
 Cookies expire after ~7 days. When expired, run `/login quark` again.
 

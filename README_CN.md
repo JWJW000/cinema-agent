@@ -63,7 +63,7 @@ Agent 内置命令：
 /memory        查看当前记忆
 /remember k=v  记住一条偏好
 /forget        清空会话记忆
-/login quark   打开夸克网页，优先自动读取 Cookie
+/login quark   夸克 App 扫码登录，失败后 Cookie 兜底
 /exit          退出
 ```
 
@@ -105,7 +105,9 @@ python3 scripts/agent.py                             # 不安装命令时直接�
 ```json
 {
   "quark": {
-    "cookie": "从浏览器获取的cookie"
+    "cookie": "",
+    "auth_source": "",
+    "auth_updated_at": 0
   },
   "plugins": {
     "wp365": { "enabled": true }
@@ -129,7 +131,7 @@ python3 scripts/agent.py                             # 不安装命令时直接�
 
 ### 夸克认证
 
-在终端 agent 中运行 `/login quark`。JW 会打开 [pan.quark.cn](https://pan.quark.cn)，等你在浏览器完成登录后，优先尝试从本机浏览器读取夸克 Cookie。若自动读取不可用，会退回隐藏粘贴 Cookie 的方式。
+在终端 agent 中运行 `/login quark`。JW 会优先通过 `quarkpan` 在终端生成二维码，用夸克 App 扫码并确认即可。若扫码依赖不可用或登录失败，会自动退回原来的浏览器/Cookie 兜底流程。
 
 Cookie 约 7 天过期，过期后重新运行 `/login quark` 即可。
 

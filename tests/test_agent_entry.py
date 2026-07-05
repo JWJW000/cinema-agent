@@ -1,6 +1,7 @@
 import unittest
+from unittest.mock import patch
 
-from scripts.agent import is_login_quark_command, normalize_command, render_chunk
+from scripts.agent import handle_login_quark, is_login_quark_command, normalize_command, render_chunk
 
 
 class AgentEntryTests(unittest.TestCase):
@@ -26,6 +27,19 @@ class AgentEntryTests(unittest.TestCase):
         render_chunk("找到 1 个结果：\n1. 苹果", write=written.append, sleep=lambda _: None)
 
         self.assertEqual(written, ["找到 1 个结果：\n1. 苹果"])
+
+    def test_handle_login_quark_reports_qr_source(self):
+        with patch("scripts.agent.QuarkAuthManager") as manager_cls:
+            manager_cls.return_value.login.return_value = {
+                "ok": True,
+                "source": "qr",
+                "cookie_length": 16,
+            }
+
+            result = handle_login_quark()
+
+        self.assertIn("夸克 App 扫码", result)
+        self.assertIn("长度 16", result)
 
 
 if __name__ == "__main__":

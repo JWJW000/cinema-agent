@@ -1,6 +1,8 @@
 {
   "quark": {
-    "cookie": ""
+    "cookie": "",
+    "auth_source": "",
+    "auth_updated_at": 0
   },
   "plugins": {
     "wp365": { "enabled": true },
