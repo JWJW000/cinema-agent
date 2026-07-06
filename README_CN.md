@@ -110,7 +110,13 @@ python3 scripts/agent.py                             # 不安装命令时直接�
     "auth_updated_at": 0
   },
   "plugins": {
-    "wp365": { "enabled": true }
+    "wp365": { "enabled": true },
+    "lunatv": {
+      "enabled": true,
+      "max_sources": 10,
+      "timeout": 10,
+      "include_sites": []
+    }
   },
   "save_folder": "夸克影视",
   "omdb_api_key": "",
@@ -149,6 +155,15 @@ Cookie 约 7 天过期，过期后重新运行 `/login quark` 即可。
 /remember quality=4K
 /forget
 ```
+
+### 多搜索源
+
+内置两个搜索源：
+
+- `wp365`：聚合网盘资源，夸克结果可以继续保存到夸克网盘。
+- `lunatv`：读取 [LunaTV-config](https://github.com/hafrey1/LunaTV-config) 的 MacCMS 采集源，返回在线播放源和播放地址，不作为夸克保存资源。
+
+`lunatv.max_sources` 控制每次搜索最多查询多少个源。结果里如果出现在线播放源，可以说“展开第一个结果播放地址”查看链接。
 
 ### 自动分类
 

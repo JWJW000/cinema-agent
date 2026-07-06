@@ -99,7 +99,13 @@ Edit `config.json` (created by setup wizard):
     "auth_updated_at": 0
   },
   "plugins": {
-    "wp365": { "enabled": true }
+    "wp365": { "enabled": true },
+    "lunatv": {
+      "enabled": true,
+      "max_sources": 10,
+      "timeout": 10,
+      "include_sites": []
+    }
   },
   "save_folder": "夸克影视",
   "omdb_api_key": "",
@@ -138,6 +144,15 @@ Commands:
 /remember quality=4K
 /forget
 ```
+
+### Multiple Search Sources
+
+Built-in sources:
+
+- `wp365`: cloud-drive aggregation. Quark results can be saved to Quark.
+- `lunatv`: reads MacCMS API sites from [LunaTV-config](https://github.com/hafrey1/LunaTV-config). It returns online playback sources and playback URLs, not Quark-saveable resources.
+
+Use `lunatv.max_sources` to limit how many LunaTV sources are queried per search. After an online result appears, ask `展开第一个结果播放地址` to show its URL.
 
 ### Genre Classification
 

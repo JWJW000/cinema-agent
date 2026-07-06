@@ -144,6 +144,8 @@ class AgentCore:
             return self._handle_slash("/help")
         if self._is_saved_location_question(text):
             return self._saved_location_answer()
+        if self._is_show_last_result_link_request(text):
+            return self._show_last_result_link(text)
         if self._is_save_last_result_request(text):
             return self._save_last_result(text)
         if not self.model_config.is_configured:
@@ -205,6 +207,8 @@ class AgentCore:
             return self._handle_slash("/help")
         if self._is_saved_location_question(text):
             return self._saved_location_answer()
+        if self._is_show_last_result_link_request(text):
+            return self._show_last_result_link(text)
         if self._is_save_last_result_request(text):
             return self._save_last_result(text)
         return None
@@ -219,7 +223,7 @@ class AgentCore:
                 "  /memory        查看记忆\n"
                 "  /remember k=v  记住偏好\n"
                 "  /forget        清空会话记忆\n"
-                "  /login quark   浏览器辅助登录夸克\n"
+                "  /login quark   扫码登录夸克\n"
                 "  /exit          退出\n"
             )
         if text == "/tools":
@@ -279,6 +283,24 @@ class AgentCore:
         normalized = text.replace(" ", "")
         return "保存" in normalized and any(marker in normalized for marker in ("第一个", "第1个", "1个", "第一条", "第1条"))
 
+    def _is_show_last_result_link_request(self, text: str) -> bool:
+        normalized = text.replace(" ", "")
+        wants_link = any(word in normalized for word in ("播放地址", "链接", "地址", "展开", "查看"))
+        first_result = any(marker in normalized for marker in ("第一个", "第1个", "1个", "第一条", "第1条"))
+        return wants_link and first_result
+
+    def _show_last_result_link(self, text: str) -> str:
+        if not self.memory.session.last_search_results:
+            return "还没有可查看的搜索结果。你可以先让我搜索电影。"
+        result = self.memory.session.last_search_results[0]
+        title = result.get("title", "第一个结果")
+        url = result.get("url", "")
+        if not url:
+            return f"{title} 没有返回可展示的链接。"
+        if result.get("source") == "online":
+            return f"{title}\n播放地址：{url}"
+        return f"{title}\n资源链接：{url}"
+
     def _save_last_result(self, text: str) -> str:
         if not self.memory.session.last_search_results:
             return "还没有可保存的搜索结果。你可以先让我搜索电影。"
@@ -326,7 +348,10 @@ class AgentCore:
             site = item.get("site", "")
             score = item.get("score", 0)
             lines.append(f"{index}. {title} [{source}/{site}] 评分 {score}")
-        lines.append("如果要保存，可以说“保存第一个结果”。")
+        if any(item.get("source") == "quark" for item in results):
+            lines.append("如果要保存夸克资源，可以说“保存第一个结果”。")
+        if any(item.get("source") == "online" for item in results):
+            lines.append("包含在线播放源，可让我展开某个结果的播放地址。")
         return "\n".join(lines)
 
     def _format_save_result(self, result: Any) -> str:

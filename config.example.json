@@ -6,6 +6,12 @@
   },
   "plugins": {
     "wp365": { "enabled": true },
+    "lunatv": {
+      "enabled": true,
+      "max_sources": 10,
+      "timeout": 10,
+      "include_sites": []
+    },
     "mini4k": { "enabled": false, "username": "", "password": "" }
   },
   "save_folder": "夸克影视",

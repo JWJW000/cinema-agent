@@ -201,6 +201,48 @@ class AgentCoreTests(unittest.TestCase):
         self.assertNotIn("ResourceResult", output)
         self.assertEqual(core.memory.session.last_search_results[0]["title"], "苹果 (2007)")
 
+    def test_online_search_results_do_not_prompt_quark_save(self):
+        registry = ToolRegistry()
+        registry.register(
+            Tool(
+                name="cinema.search",
+                description="Search",
+                risk="read",
+                handler=lambda args: {
+                    "count": 1,
+                    "results": [
+                        {
+                            "title": "苹果 (2007) - 量子资源",
+                            "source": "online",
+                            "site": "lunatv",
+                            "score": 25,
+                            "url": "https://example.test/apple.m3u8",
+                        }
+                    ],
+                },
+            )
+        )
+        fake_llm = FakeLLM(
+            {
+                "content": "",
+                "tool_calls": [
+                    {
+                        "function": {
+                            "name": "cinema.search",
+                            "arguments": '{"query": "范冰冰 苹果"}',
+                        }
+                    }
+                ],
+            }
+        )
+        config = AgentModelConfig("openai_compatible", "https://api.example/v1", "demo", "key")
+        core = AgentCore(model_config=config, registry=registry, llm=fake_llm)
+
+        output = core.handle_input("帮我找范冰冰主演的苹果")
+
+        self.assertIn("在线播放源", output)
+        self.assertNotIn("保存第一个结果", output)
+
     def test_saved_location_question_before_save_does_not_call_model_or_auto(self):
         fake_llm = FakeLLM({"content": "should not call"})
         config = AgentModelConfig("openai_compatible", "https://api.example/v1", "demo", "key")
@@ -229,6 +271,27 @@ class AgentCoreTests(unittest.TestCase):
         output = core.handle_input("保存第一个结果")
 
         self.assertIn("夸克影视/苹果 (2007)", output)
+        self.assertEqual(fake_llm.calls, [])
+
+    def test_show_first_result_link_uses_remembered_online_result_without_model(self):
+        config = AgentModelConfig("openai_compatible", "https://api.example/v1", "demo", "key")
+        fake_llm = FakeLLM({"content": "should not call"})
+        core = AgentCore(model_config=config, registry=build_default_registry(), llm=fake_llm)
+        core.memory.session.remember_search(
+            [
+                {
+                    "title": "苹果 (2007) - 量子资源",
+                    "source": "online",
+                    "site": "lunatv",
+                    "url": "https://example.test/apple.m3u8",
+                }
+            ]
+        )
+
+        output = core.handle_input("展开第一个结果播放地址")
+
+        self.assertIn("苹果 (2007)", output)
+        self.assertIn("https://example.test/apple.m3u8", output)
         self.assertEqual(fake_llm.calls, [])
 
     def test_confirm_callback_blocks_write_tool(self):
